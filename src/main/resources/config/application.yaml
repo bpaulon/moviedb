@@ -1,0 +1,15 @@
+# Server configuration
+server:
+  port: 8080
+  contextPath: /
+
+# See http://docs.spring.io/spring-boot/docs/1.2.1.RELEASE/reference/htmlsingle/#boot-features-custom-log-levels
+logging:
+  level:
+    org.springframework.web: INFO
+    bcp.spring: DEBUG
+ 
+redis:
+  server:
+    #host:192.68.99.100
+    #port:6379

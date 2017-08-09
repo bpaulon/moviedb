@@ -1,0 +1,94 @@
+// For JUnit5 - Gradle integration and configuration see:
+// https://github.com/junit-team/junit5-samples/tree/master/junit5-gradle-consumer
+buildscript {
+	dependencies {
+		classpath 'org.junit.platform:junit-platform-gradle-plugin:1.0.0-M4'
+	}
+}
+
+// For spring-boot gradle integration see:
+// http://docs.spring.io/spring-boot/docs/current/reference/html/build-tool-plugins-gradle-plugin.html
+plugins {
+	id 'org.springframework.boot' version '1.5.3.RELEASE'
+	id "com.moowork.node" version "0.12"
+}
+
+apply plugin: 'org.springframework.boot'
+apply plugin: 'org.junit.platform.gradle.plugin'
+apply plugin: 'java'
+apply plugin: 'eclipse'
+
+eclipse {
+	project {
+		// see: https://docs.gradle.org/3.5/dsl/org.gradle.plugins.ide.eclipse.model.EclipseProject.html
+		name = 'MovieDB'
+		comment = 'React to Boot example'
+	}
+}
+
+
+	tasks.withType(JavaCompile) { 
+		options.encoding = 'UTF-8' 
+	}
+
+	sourceCompatibility = 1.8
+	targetCompatibility = 1.8
+   
+    repositories {
+        mavenCentral()
+    }
+	
+group = 'bcp.spring.moviedb'
+version = '1.0-SNAPSHOT'
+description = "AngularJS to Spring Boot"
+
+junitPlatform {
+	platformVersion = "1.0.0-M4"
+}
+
+task webpack(type: NodeTask, dependsOn: 'npmInstall') {
+	def osName = System.getProperty("os.name").toLowerCase();
+	if (osName.contains("windows")) {
+		script = project.file('node_modules/webpack/bin/webpack.js')
+	} else {
+		script = project.file('node_modules/.bin/webpack')
+	}
+}
+
+processResources.dependsOn 'webpack'
+
+dependencies {
+
+	compile group: 'org.springframework.boot', 
+			name: 'spring-boot-starter-web'
+	
+	compile group: 'org.springframework.boot', 
+		name: 'spring-boot-devtools'			
+	
+	compile group: 'org.springframework.boot', 
+		name: 'spring-boot-starter-thymeleaf'
+		
+    compile group: 'org.springframework.data',
+			name: 'spring-data-redis'
+			
+	compile group: 'redis.clients',
+			name: 'jedis'
+
+	compile group: 'commons-codec', 
+			name: 'commons-codec', 
+			version: '1.5'
+	
+	compile group: 'com.fasterxml.jackson.dataformat',
+			name: 'jackson-dataformat-yaml'
+	
+	compile group: 'org.projectlombok', 
+			name: 'lombok', 
+			version:'1.16.4' 
+			
+	testCompile 'org.junit.jupiter:junit-jupiter-engine:5.0.0-M4'
+	testCompile 'org.junit.platform:junit-platform-runner:1.0.0-M4'
+	testCompile 'org.junit.jupiter:junit-jupiter-api:5.0.0-M4'
+}
+
+
+
