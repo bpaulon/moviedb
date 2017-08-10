@@ -6,21 +6,25 @@
     life-form, and they soon realize that its life cycle has merely begun.
   director: "Ridley Scott"
   releaseDate: "1979-02-01"
+  imageFileName: "alien.jpg"
 - name: "Alien: Ressurection"
   plot: > 
     Two centuries after her death, Ellen Ripley is revived as a powerful human/alien 
     hybrid clone who must continue her war against the aliens.
   director: "Ridley Scott"
   releaseDate: "1997-02-01"
+  imageFileName: "alien-ressurection.jpg"
 - name: "Prometheus"
   plot: >
     Following clues to the origin of mankind, a team finds a structure on a distant 
     moon, but they soon realize they are not alone.  
   director: "Ridley Scott"
   releaseDate: "2012-02-01"
+  imageFileName: "prometheus.jpg"
 - name: "Aliens"
   plot: >
     The moon from Alien (1979) has been colonized, but contact is lost. This time,
     the rescue team has impressive firepower, but will it be enough?  
   director: "James Cameron"
   releaseDate: "1986-02-01"
+  imageFileName: "aliens.jpg"

@@ -16,6 +16,7 @@ public class DoubleMetaphoneTests {
 	public void test() {
 		assertEquals("AKSP", doubleMetaphone.doubleMetaphone("exceptin", true));
 		assertEquals("AKSP", doubleMetaphone.doubleMetaphone("exceptions", false));
+		assertEquals("PRM0", doubleMetaphone.doubleMetaphone("Prometheus", false));
 	}
 
 }

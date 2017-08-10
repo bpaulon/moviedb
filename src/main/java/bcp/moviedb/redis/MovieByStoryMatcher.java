@@ -16,8 +16,9 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations.TypedTuple;
 import org.springframework.stereotype.Component;
 
-import bcp.moviedb.redis.dbconfig.Movie;
-import bcp.moviedb.redis.dbconfig.MovieConfig;
+import bcp.moviedb.redis.dbconfig.MovieInfo;
+import bcp.moviedb.redis.dbconfig.RedisMovieInfoFeeder;
+import bcp.moviedb.redis.dbconfig.MovieExtendedInfo;
 import lombok.extern.slf4j.Slf4j;
 
 @Component
@@ -38,7 +39,7 @@ public class MovieByStoryMatcher {
 		doubleMetaphone = new DoubleMetaphone();
 	}
 
-	public List<Movie> match() {
+	public List<MovieExtendedInfo> match() {
 		List<String> searchKeys = words.stream()
 				.filter(s -> s != null && !s.isEmpty())
 				.map(this::createKeyForWord)
@@ -57,7 +58,7 @@ public class MovieByStoryMatcher {
 		Set<TypedTuple<String>> ids = (Set) template.opsForZSet()
 				.rangeWithScores("out", 0, -1);
 
-		List<Movie> movies = ids.stream()
+		List<MovieExtendedInfo> movies = ids.stream()
 				// Each movie id has an associated score which is the frequency of the searched words
 				// Sort the ids in the reverse order so the first movie id will be the one with 
 				// the highest frequency of the searched words
@@ -72,13 +73,15 @@ public class MovieByStoryMatcher {
 	}
 
 	private String createKeyForWord(String word) {
-		return MovieConfig.WORD_KEY_PREFIX + doubleMetaphone.doubleMetaphone(word, false);
+		String mp = doubleMetaphone.doubleMetaphone(word, false);
+		log.info("created search key {} for word {}", mp, word);
+		return RedisMovieInfoFeeder.WORD_KEY_PREFIX + doubleMetaphone.doubleMetaphone(word, false);
 	}
 
-	private Movie getMovieById(TypedTuple<String> idWithScore) {
+	private MovieExtendedInfo getMovieById(TypedTuple<String> idWithScore) {
 		long movieId = Long.parseLong(idWithScore.getValue());
-		return (Movie) template.opsForHash()
-				.get(MovieConfig.MOVIES_KEY, movieId);
+		return (MovieExtendedInfo) template.opsForHash()
+				.get(RedisMovieInfoFeeder.MOVIES_KEY, movieId);
 	}
 
 }

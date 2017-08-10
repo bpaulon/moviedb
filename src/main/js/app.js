@@ -1,74 +1,97 @@
 'use strict';
 
-// tag::vars[]
 const React = require('react');
 const ReactDOM = require('react-dom')
 const client = require('./client');
-// end::vars[]
 
-// tag::app[]
+/**
+ * App Component
+ */
 class App extends React.Component {
-
 	constructor(props) {
 		super(props);
-		this.state = {movies: []};
+		this.state = {
+			movies: [],
+			searchWord: ''
+		};
+		// This binding is necessary to make `this` work in the callback. Create
+		// a new function bound to this
+		this.updateResults = this.updateResults.bind(this);
+		this.updateInputValue = this.updateInputValue.bind(this);
 	}
-
-	componentDidMount() {
-		client({method: 'GET', path: '/search?word=and'}).done(response => {
-			console.log(response.entity);
+	
+	updateResults() {
+		client({method: 'GET', path: '/search?word=' + this.state.searchWord}).done(response => {
+			this.setState({movies: []});
 			this.setState({ movies: this.state.movies.concat(JSON.parse(response.entity)) });
 		});
 	}
-
+	
 	render() {
 		return (
-			<MovieList movies={this.state.movies}/>
+			<div>
+				<input value={this.state.searchWord} onChange={this.updateInputValue}/>
+				<button onClick={this.updateResults}>Search</button>
+				<MovieList movies={this.state.movies}/>
+			</div>
 		)
 	}
+	
+	updateInputValue(evt) {
+	    this.setState({
+	    	searchWord: evt.target.value
+	    });
+	  }
 }
-// end::app[]
 
-// tag::movie-list[]
+/**
+ * List of Movies as DIV table
+ */
 class MovieList extends React.Component{
 	render() {
-		var movies = this.props.movies.map((movie, index) =>
-			<Movie key={index} movie={movie}/>
-		);
+		var movies = this.props.movies.map((m, index) =>
+			<Movie key={index} info={m}/>)
 		return (
-			<table>
-				<tbody>
-					<tr>
-						<th>Name</th>
-						<th>Director</th>
-						<th>Story</th>
-					</tr>
-					{movies}
-				</tbody>
-			</table>
+			<div className='table'>
+				{movies}
+			</div>
 		)
 	}
 }
-// end::movie-list[]
 
-// tag::movie[]
+/**
+ * Movie component
+ */
 class Movie extends React.Component{
 	render() {
 		return (
-			<tr>
-				<td>{this.props.movie.name}</td>
-				<td>{this.props.movie.director}</td>
-				<td>{this.props.movie.plot}</td>
-			</tr>
+			<div className="divider"> {/* add some space after each movie*/}
+				<div className="row">
+					<div className="cell">
+						<div className="row">
+							<div className="cell">Name</div>
+							<div className="cell">{this.props.info.movie.name}</div>
+						</div>
+						<div className="row">
+							<div className="cell">Director</div>
+							<div className="cell">{this.props.info.movie.director}</div>
+						</div>
+						<div className="row">
+							<div className="cell">Story</div>
+							<div className="cell">{this.props.info.movie.plot}</div>
+						</div>
+					</div>
+					<div>
+						<img src={"data:image/jpg;base64," + this.props.info.image}></img>
+					</div>
+				</div>
+			</div>
 		)
 	}
 }
-// end::movie[]
 
-// tag::render[]
 ReactDOM.render(
 	<App />,
 	document.getElementById('react')
 )
-// end::render[]
 

@@ -27,16 +27,16 @@ eclipse {
 }
 
 
-	tasks.withType(JavaCompile) { 
-		options.encoding = 'UTF-8' 
-	}
+tasks.withType(JavaCompile) { 
+	options.encoding = 'UTF-8' 
+}
 
-	sourceCompatibility = 1.8
-	targetCompatibility = 1.8
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
    
-    repositories {
-        mavenCentral()
-    }
+repositories {
+	mavenCentral()
+}
 	
 group = 'bcp.spring.moviedb'
 version = '1.0-SNAPSHOT'
@@ -88,6 +88,7 @@ dependencies {
 	testCompile 'org.junit.jupiter:junit-jupiter-engine:5.0.0-M4'
 	testCompile 'org.junit.platform:junit-platform-runner:1.0.0-M4'
 	testCompile 'org.junit.jupiter:junit-jupiter-api:5.0.0-M4'
+	testCompile 'org.springframework.boot:spring-boot-starter-test'
 }
 
 
