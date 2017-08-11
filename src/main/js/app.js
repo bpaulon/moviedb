@@ -12,7 +12,7 @@ class App extends React.Component {
 		super(props);
 		this.state = {
 			movies: [],
-			searchWord: ''
+			searchWords: []
 		};
 		// This binding is necessary to make `this` work in the callback. Create
 		// a new function bound to this
@@ -21,7 +21,7 @@ class App extends React.Component {
 	}
 	
 	updateResults() {
-		client({method: 'GET', path: '/search?word=' + this.state.searchWord}).done(response => {
+		client({method: 'GET', path: '/search?word=' + this.state.searchWords}).done(response => {
 			this.setState({movies: []});
 			this.setState({ movies: this.state.movies.concat(JSON.parse(response.entity)) });
 		});
@@ -38,8 +38,9 @@ class App extends React.Component {
 	}
 	
 	updateInputValue(evt) {
+		var str = evt.target.value;
 	    this.setState({
-	    	searchWord: evt.target.value
+	    	searchWords: str.match(/\S+/g)
 	    });
 	  }
 }

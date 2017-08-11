@@ -11,7 +11,6 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import lombok.AccessLevel;
 import lombok.Data;
-import lombok.Getter;
 import lombok.Setter;
 
 @Data
@@ -21,7 +20,6 @@ public class MovieLocalConfig {
 	private String imageFileName;
 
 	@JsonIgnore
-	@Getter(AccessLevel.NONE)
 	@Setter(AccessLevel.NONE)
 	private MovieInfo movie;
 
@@ -31,10 +29,11 @@ public class MovieLocalConfig {
 	}
 
 	@JsonCreator
-	public MovieLocalConfig(@JsonProperty("name") String name, @JsonProperty("plot") String plot,
+	
+	public MovieLocalConfig(@JsonProperty("name") String name, 
+			@JsonProperty("plot") String plot,
 			@JsonProperty("director") String director,
 			@JsonProperty("releaseDate") @JsonDeserialize(using = LocalDateDeserializer.class) @JsonSerialize(using = LocalDateSerializer.class) LocalDate releaseDate) {
 		this.movie = new MovieInfo(name, plot, director, releaseDate);
-
 	}
 }

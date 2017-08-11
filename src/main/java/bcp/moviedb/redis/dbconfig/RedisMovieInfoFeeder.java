@@ -44,7 +44,7 @@ public class RedisMovieInfoFeeder implements CommandLineRunner {
 	Resource movieResource;
 
 	@Value("classpath:/config/images/")
-	Resource image;
+	Resource imagesResourcePath;
 	
 	@Autowired
 	@Qualifier("RedisTemplate")
@@ -61,8 +61,7 @@ public class RedisMovieInfoFeeder implements CommandLineRunner {
 				.set(MOVIE_SEQUENCE_KEY, 0L);
 		movies.forEach(movie -> {
 			// id must be incremented outside the transaction - otherwise the
-			// INCR operation
-			// only gets QUEUED and NO value is returned
+			// INCR operation only gets QUEUED and NO value is returned
 			long movieId = template.opsForValue()
 					.increment(MOVIE_SEQUENCE_KEY, 1L);
 			storeMovie(movie, movieId);
@@ -70,62 +69,80 @@ public class RedisMovieInfoFeeder implements CommandLineRunner {
 	}
 
 	private List<MovieExtendedInfo> readMovies() throws JsonParseException, JsonMappingException, IOException {
-		List<MovieLocalConfig> movies = mapper.readValue(movieResource.getFile(),
+		List<MovieLocalConfig> movieConfig = mapper.readValue(movieResource.getFile(),
 				new TypeReference<List<MovieLocalConfig>>() {
 				});
 
-		
-		List<MovieExtendedInfo> extMovies = movies.stream()
-				.map(m -> {
-					MovieExtendedInfo mei = MovieExtendedInfo.builder()
-							.movie(m.getMovie())
-							.image(loadImageFromFile(m.getImageFileName()))
-							.build();
-					return mei;
-				})
+		List<MovieExtendedInfo> extMovies = movieConfig.stream()
+				.map(this::buildInfo)
 				.collect(Collectors.toList());
 		
 		return extMovies;
 	}
 
+	/**
+	 * Build the info from local configuration
+	 * 
+	 * @param m - local info 
+	 * @return - external info
+	 */
+	private MovieExtendedInfo buildInfo(MovieLocalConfig m) {
+		byte[] image = loadImageFromFile(m.getImageFileName());
+		
+		MovieExtendedInfo mei = MovieExtendedInfo.builder()
+				.movie(m.getMovie())
+				.image(image)
+				.build();
+		return mei;
+	}
+	
 	private void storeMovie(MovieExtendedInfo info, long movieId) {
 		template.execute(new SessionCallback<List<Object>>() {
+			
 			@SuppressWarnings({ "unchecked", "rawtypes" })
 			public List<Object> execute(RedisOperations operations) throws DataAccessException {
+				// begin transaction
 				operations.multi();
 
-				operations.opsForHash()
-						.put(MOVIES_KEY, movieId, info);
-
-				Map<String, Integer> metaphones = extractWords(info.getMovie().getPlot());
-				metaphones.putAll(extractWords(info.getMovie().getName()));
+				// store the movie info
+				operations.opsForHash().put(MOVIES_KEY, movieId, info);
 				
-				metaphones.keySet()
-						.forEach(mp -> {
-							operations.opsForZSet()
-									.add(WORD_KEY_PREFIX + mp, movieId, metaphones.get(mp));
-						});
-
+				// for each search key add to the associated sorted set the movie id. Each movie id has a 
+				// score representing the frequency of the word in story and name
+				Map<String, Integer> searchKeys = buildSearchKeysWithFrequency(info);
+				searchKeys.forEach((key, freq) -> operations.opsForZSet()
+						.add(WORD_KEY_PREFIX + key, movieId, freq));
+				
+				//end transaction
 				return operations.exec();
 			}
 
 		});
+		
 	}
 
+	private Map<String, Integer> buildSearchKeysWithFrequency(MovieExtendedInfo info) {
+		MovieInfo mi = info.getMovie();
+		String text = mi.getPlot() + mi.getName();
+		
+		Map<String, Integer> searchKeys = extractWords(text);
+		return searchKeys;
+	}
+	
 	private Map<String, Integer> extractWords(String input) {
+		DoubleMetaphone doubleMetaphone = new DoubleMetaphone();
 		Map<String, Integer> words = new HashMap<>();
+		
 		Pattern p = Pattern.compile("[\\w']+");
 		Matcher m = p.matcher(input);
 
-		DoubleMetaphone doubleMetaphone = new DoubleMetaphone();
-
 		while (m.find()) {
 			String word = input.substring(m.start(), m.end());
-			String encoding = doubleMetaphone.doubleMetaphone(word, false);
-			Integer frequency = words.getOrDefault(encoding, 0);
-			words.put(encoding, ++frequency);
+			String metaphone = doubleMetaphone.doubleMetaphone(word, false);
+			// store or increment existing frequency
+			words.merge(metaphone, 1, (freq, val) -> freq + val);
 
-			// optional - do the same for the alternate metaphone encoding
+			// Optionally store the alternate metaphone encoding
 		}
 
 		log.debug("found in input: {}", words);
@@ -136,15 +153,15 @@ public class RedisMovieInfoFeeder implements CommandLineRunner {
 		byte[] fileContent = new byte[] {};
 
 		try {
-			Path p = image.getFile()
+			Path imagePath = imagesResourcePath.getFile()
 					.toPath()
 					.resolve(filename);
-			fileContent = Files.readAllBytes(p);
-			log.info("image loaded from {}", p.toString());
+			fileContent = Files.readAllBytes(imagePath);
+			log.info("image loaded from {}", imagePath.toString());
 		} catch (IOException e) {
-			log.error("could not load image from {}", filename, e);;
+			log.error("could not load image from {}", filename, e);
 		}
-		
+
 		return fileContent;
 	}
 
