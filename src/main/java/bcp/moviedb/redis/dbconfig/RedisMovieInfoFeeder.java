@@ -26,7 +26,6 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -38,7 +37,9 @@ public class RedisMovieInfoFeeder implements CommandLineRunner {
 	public final static String MOVIE_SEQUENCE_KEY = "movie:id";
 	public final static String WORD_KEY_PREFIX = "word:";
 
-	ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+	@Autowired
+	@Qualifier("yaml")
+	ObjectMapper yamlMapper;
 
 	@Value("classpath:/config/movies.yaml")
 	Resource movieResource;
@@ -47,7 +48,6 @@ public class RedisMovieInfoFeeder implements CommandLineRunner {
 	Resource imagesResourcePath;
 	
 	@Autowired
-	@Qualifier("RedisTemplate")
 	private RedisTemplate<String, Object> template;
 
 	@Override
@@ -69,9 +69,8 @@ public class RedisMovieInfoFeeder implements CommandLineRunner {
 	}
 
 	private List<MovieExtendedInfo> readMovies() throws JsonParseException, JsonMappingException, IOException {
-		List<MovieLocalConfig> movieConfig = mapper.readValue(movieResource.getFile(),
-				new TypeReference<List<MovieLocalConfig>>() {
-				});
+		List<MovieLocalConfig> movieConfig = yamlMapper.readValue(movieResource.getFile(),
+				new TypeReference<List<MovieLocalConfig>>() {});
 
 		List<MovieExtendedInfo> extMovies = movieConfig.stream()
 				.map(this::buildInfo)
@@ -101,7 +100,7 @@ public class RedisMovieInfoFeeder implements CommandLineRunner {
 			
 			@SuppressWarnings({ "unchecked", "rawtypes" })
 			public List<Object> execute(RedisOperations operations) throws DataAccessException {
-				// begin transaction
+				// begin transaction. 
 				operations.multi();
 
 				// store the movie info
@@ -129,6 +128,13 @@ public class RedisMovieInfoFeeder implements CommandLineRunner {
 		return searchKeys;
 	}
 	
+	/**
+	 * Extracts words from the input text. For each word in the text it creates the associated metaphone.
+	 * All the metaphones are mapped to the frequency of the word in the input text 
+	 * 
+	 * @param input
+	 * @return
+	 */
 	private Map<String, Integer> extractWords(String input) {
 		DoubleMetaphone doubleMetaphone = new DoubleMetaphone();
 		Map<String, Integer> words = new HashMap<>();

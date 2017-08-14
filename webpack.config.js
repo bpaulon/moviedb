@@ -8,7 +8,7 @@ module.exports = {
     output: {
         path: __dirname,
         //filename: './src/main/resources/static/built/bundle.js'
-        //FIXME: it creates the bundle file directly into the eclipse bin folder
+        //FIXME: create different environments
         filename: './bin/static/built/bundle.js'
     },
     module: {

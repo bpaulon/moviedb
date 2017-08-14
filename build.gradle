@@ -55,6 +55,12 @@ task webpack(type: NodeTask, dependsOn: 'npmInstall') {
 	}
 }
 
+// watch for changes in source files and build them in debug mode with sourcemaps (webpack --watch -d)
+task webpackWatch (type: NpmTask) {
+	dependsOn webpack
+	args = ['run', 'watch']
+}
+
 processResources.dependsOn 'webpack'
 
 dependencies {
@@ -80,7 +86,11 @@ dependencies {
 	
 	compile group: 'com.fasterxml.jackson.dataformat',
 			name: 'jackson-dataformat-yaml'
-	
+			
+	// java.time.* support
+	compile group: 'com.fasterxml.jackson.datatype',
+			name: 'jackson-datatype-jsr310'
+			
 	compile group: 'org.projectlombok', 
 			name: 'lombok', 
 			version:'1.16.4' 

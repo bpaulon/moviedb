@@ -3,6 +3,8 @@
 const React = require('react');
 const ReactDOM = require('react-dom')
 const client = require('./client');
+const dateFormat = require('dateformat');
+
 
 /**
  * App Component
@@ -71,7 +73,7 @@ class Movie extends React.Component{
 					<div className="cell">
 						<div className="row">
 							<div className="cell">Name</div>
-							<div className="cell">{this.props.info.movie.name}</div>
+							<div className="cell">{this.props.info.movie.name} (Released: {dateFormat(Date.parse(this.props.info.movie.releaseDate), "mmmm - yyyy")})</div>
 						</div>
 						<div className="row">
 							<div className="cell">Director</div>
