@@ -33,7 +33,7 @@ class App extends React.Component {
 		return (
 			<div>
 				<input value={this.state.searchWord} onChange={this.updateInputValue}/>
-				<button onClick={this.updateResults}>Search</button>
+				<button disabled={!this.state.searchWords} onClick={this.updateResults}>Search</button>
 				<MovieList movies={this.state.movies}/>
 			</div>
 		)
@@ -84,7 +84,7 @@ class Movie extends React.Component{
 							<div className="cell">{this.props.info.movie.plot}</div>
 						</div>
 					</div>
-					<div>
+					<div>*
 						<img src={"data:image/jpg;base64," + this.props.info.image}></img>
 					</div>
 				</div>

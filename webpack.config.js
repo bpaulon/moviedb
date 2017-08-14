@@ -7,9 +7,9 @@ module.exports = {
     debug: true,
     output: {
         path: __dirname,
-        //filename: './src/main/resources/static/built/bundle.js'
-        //FIXME: create different environments
-        filename: './bin/static/built/bundle.js'
+        filename: './src/main/resources/static/built/bundle.js'
+        // With eclipse remove main/js from sources so the app does not get redeployed and change filename to
+        //filename: './bin/static/built/bundle.js'
     },
     module: {
         loaders: [
