@@ -1,7 +1,7 @@
-package bcp.moviedb.redis;
+package bcp.moviedb;
 
-import static bcp.moviedb.redis.dbconfig.RedisMovieInfoFeeder.MOVIES_KEY;
-import static bcp.moviedb.redis.dbconfig.RedisMovieInfoFeeder.WORD_KEY_PREFIX;
+import static bcp.moviedb.config.RedisMovieInfoFeeder.MOVIES_KEY;
+import static bcp.moviedb.config.RedisMovieInfoFeeder.WORD_KEY_PREFIX;
 import static java.util.stream.Collectors.toList;
 
 import java.util.List;
@@ -16,7 +16,6 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations.TypedTuple;
 import org.springframework.stereotype.Component;
 
-import bcp.moviedb.redis.dbconfig.MovieExtendedInfo;
 import lombok.extern.slf4j.Slf4j;
 
 @Component

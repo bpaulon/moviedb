@@ -20,8 +20,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 
-import bcp.moviedb.redis.dbconfig.MovieExtendedInfo;
-import bcp.moviedb.redis.dbconfig.MovieLocalConfig;
+import bcp.moviedb.config.MovieLocalInfo;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -53,8 +52,8 @@ public class YamlConfigurator {
 
 	@Test
 	public void testDeserialize() throws JsonParseException, JsonMappingException, IOException {
-		List<MovieLocalConfig> movies = mapper.readValue(movieResource.getFile(),
-				new TypeReference<List<MovieLocalConfig>>() {
+		List<MovieLocalInfo> movies = mapper.readValue(movieResource.getFile(),
+				new TypeReference<List<MovieLocalInfo>>() {
 				});
 
 		System.out.println(movies);

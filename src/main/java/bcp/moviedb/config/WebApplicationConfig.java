@@ -1,4 +1,4 @@
-package bcp.moviedb;
+package bcp.moviedb.config;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;

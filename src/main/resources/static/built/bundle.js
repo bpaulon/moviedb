@@ -78,7 +78,7 @@
 				movies: [],
 				searchWords: []
 			};
-			// This binding is necessary to make `this` work in the callback. Create
+			// This binding is necessary to make 'this' work in the callback. Create
 			// a new function bound to this
 			_this.updateResults = _this.updateResults.bind(_this);
 			_this.updateInputValue = _this.updateInputValue.bind(_this);
@@ -141,7 +141,7 @@
 			key: 'render',
 			value: function render() {
 				var movies = this.props.movies.map(function (m, index) {
-					return React.createElement(Movie, { key: index, info: m });
+					return React.createElement(MovieInfoContainer, { key: index, info: m });
 				});
 				return React.createElement(
 					'div',
@@ -154,92 +154,114 @@
 		return MovieList;
 	}(React.Component);
 	
+	var MovieInfoContainer = function (_React$Component3) {
+		_inherits(MovieInfoContainer, _React$Component3);
+	
+		function MovieInfoContainer(props) {
+			_classCallCheck(this, MovieInfoContainer);
+	
+			var _this4 = _possibleConstructorReturn(this, (MovieInfoContainer.__proto__ || Object.getPrototypeOf(MovieInfoContainer)).call(this, props));
+	
+			_this4.state = {
+				info: props.info
+			};
+			return _this4;
+		}
+	
+		_createClass(MovieInfoContainer, [{
+			key: 'render',
+			value: function render() {
+				return React.createElement(MovieInfo, this._extract(this.state.info));
+			}
+		}, {
+			key: '_extract',
+			value: function _extract(info) {
+				return {
+					"title": info.movie.name + " (Released: " + dateFormat(Date.parse(info.movie.releaseDate), "mmmm - yyyy") + ")",
+					"director": info.movie.director,
+					"story": info.movie.plot,
+					"image": "data:image/jpg;base64," + info.image
+				};
+			}
+		}]);
+	
+		return MovieInfoContainer;
+	}(React.Component);
+	
 	/**
 	 * Movie component
 	 */
 	
 	
-	var Movie = function (_React$Component3) {
-		_inherits(Movie, _React$Component3);
+	function MovieInfo(props) {
+		var _ref = [props.title, props.director, props.story, props.image],
+		    title = _ref[0],
+		    director = _ref[1],
+		    story = _ref[2],
+		    image = _ref[3];
 	
-		function Movie() {
-			_classCallCheck(this, Movie);
 	
-			return _possibleConstructorReturn(this, (Movie.__proto__ || Object.getPrototypeOf(Movie)).apply(this, arguments));
-		}
-	
-		_createClass(Movie, [{
-			key: 'render',
-			value: function render() {
-				return React.createElement(
+		return React.createElement(
+			'div',
+			{ className: 'divider' },
+			' ',
+			React.createElement(
+				'div',
+				{ className: 'row' },
+				React.createElement(
 					'div',
-					{ className: 'divider' },
-					' ',
+					{ className: 'cell' },
 					React.createElement(
 						'div',
 						{ className: 'row' },
 						React.createElement(
 							'div',
 							{ className: 'cell' },
-							React.createElement(
-								'div',
-								{ className: 'row' },
-								React.createElement(
-									'div',
-									{ className: 'cell' },
-									'Name'
-								),
-								React.createElement(
-									'div',
-									{ className: 'cell' },
-									this.props.info.movie.name,
-									' (Released: ',
-									dateFormat(Date.parse(this.props.info.movie.releaseDate), "mmmm - yyyy"),
-									')'
-								)
-							),
-							React.createElement(
-								'div',
-								{ className: 'row' },
-								React.createElement(
-									'div',
-									{ className: 'cell' },
-									'Director'
-								),
-								React.createElement(
-									'div',
-									{ className: 'cell' },
-									this.props.info.movie.director
-								)
-							),
-							React.createElement(
-								'div',
-								{ className: 'row' },
-								React.createElement(
-									'div',
-									{ className: 'cell' },
-									'Story'
-								),
-								React.createElement(
-									'div',
-									{ className: 'cell' },
-									this.props.info.movie.plot
-								)
-							)
+							'Title'
 						),
 						React.createElement(
 							'div',
-							null,
-							'*',
-							React.createElement('img', { src: "data:image/jpg;base64," + this.props.info.image })
+							{ className: 'cell' },
+							title
+						)
+					),
+					React.createElement(
+						'div',
+						{ className: 'row' },
+						React.createElement(
+							'div',
+							{ className: 'cell' },
+							'Director'
+						),
+						React.createElement(
+							'div',
+							{ className: 'cell' },
+							director
+						)
+					),
+					React.createElement(
+						'div',
+						{ className: 'row' },
+						React.createElement(
+							'div',
+							{ className: 'cell' },
+							'Story'
+						),
+						React.createElement(
+							'div',
+							{ className: 'cell' },
+							story
 						)
 					)
-				);
-			}
-		}]);
-	
-		return Movie;
-	}(React.Component);
+				),
+				React.createElement(
+					'div',
+					null,
+					React.createElement('img', { src: image })
+				)
+			)
+		);
+	}
 	
 	ReactDOM.render(React.createElement(App, null), document.getElementById('react'));
 
@@ -23696,7 +23718,7 @@
   \***************************/
 /***/ (function(module, exports, __webpack_require__) {
 
-	var require;var __WEBPACK_AMD_DEFINE_RESULT__;/* WEBPACK VAR INJECTION */(function(process) {/** @license MIT License (c) copyright 2010-2014 original author or authors */
+	var __WEBPACK_AMD_DEFINE_RESULT__;var require;/* WEBPACK VAR INJECTION */(function(process) {/** @license MIT License (c) copyright 2010-2014 original author or authors */
 	/** @author Brian Cavalier */
 	/** @author John Hann */
 	

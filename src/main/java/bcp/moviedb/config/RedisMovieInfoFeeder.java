@@ -1,4 +1,4 @@
-package bcp.moviedb.redis.dbconfig;
+package bcp.moviedb.config;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -27,6 +27,8 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import bcp.moviedb.MovieExtendedInfo;
+import bcp.moviedb.MovieInfo;
 import lombok.extern.slf4j.Slf4j;
 
 @Configuration
@@ -69,8 +71,8 @@ public class RedisMovieInfoFeeder implements CommandLineRunner {
 	}
 
 	private List<MovieExtendedInfo> readMovies() throws JsonParseException, JsonMappingException, IOException {
-		List<MovieLocalConfig> movieConfig = yamlMapper.readValue(movieResource.getFile(),
-				new TypeReference<List<MovieLocalConfig>>() {});
+		List<MovieLocalInfo> movieConfig = yamlMapper.readValue(movieResource.getFile(),
+				new TypeReference<List<MovieLocalInfo>>() {});
 
 		List<MovieExtendedInfo> extMovies = movieConfig.stream()
 				.map(this::buildInfo)
@@ -85,7 +87,7 @@ public class RedisMovieInfoFeeder implements CommandLineRunner {
 	 * @param m - local info 
 	 * @return - external info
 	 */
-	private MovieExtendedInfo buildInfo(MovieLocalConfig m) {
+	private MovieExtendedInfo buildInfo(MovieLocalInfo m) {
 		byte[] image = loadImageFromFile(m.getImageFileName());
 		
 		MovieExtendedInfo mei = MovieExtendedInfo.builder()

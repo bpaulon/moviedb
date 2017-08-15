@@ -8,8 +8,8 @@ module.exports = {
     output: {
         path: __dirname,
         filename: './src/main/resources/static/built/bundle.js'
-        // With eclipse remove main/js from sources so the app does not get redeployed and change filename to
-        //filename: './bin/static/built/bundle.js'
+        // In Eclipse remove main/js from sources so the app does not get redeployed and change filename to
+        // filename: './bin/static/built/bundle.js'
     },
     module: {
         loaders: [

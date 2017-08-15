@@ -1,4 +1,4 @@
-package bcp.moviedb.redis.dbconfig;
+package bcp.moviedb.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;

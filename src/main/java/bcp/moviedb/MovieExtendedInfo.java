@@ -1,4 +1,4 @@
-package bcp.moviedb.redis.dbconfig;
+package bcp.moviedb;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

@@ -1,4 +1,4 @@
-package bcp.moviedb.redis.dbconfig;
+package bcp.moviedb.config;
 
 import java.time.LocalDate;
 
@@ -7,12 +7,13 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 
+import bcp.moviedb.MovieInfo;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.Setter;
 
 @Data
-public class MovieLocalConfig {
+public class MovieLocalInfo {
 
 	@JsonProperty
 	private String imageFileName;
@@ -27,7 +28,7 @@ public class MovieLocalConfig {
 	}
 
 	@JsonCreator
-	public MovieLocalConfig(@JsonProperty("name") String name, 
+	public MovieLocalInfo(@JsonProperty("name") String name, 
 			@JsonProperty("plot") String plot,
 			@JsonProperty("director") String director,
 			@JsonProperty("releaseDate") LocalDate releaseDate) {
