@@ -76,23 +76,36 @@
 	
 			_this.state = {
 				movies: [],
+				count: 0,
+				pageSize: 2,
+				start: 0,
 				searchWords: []
 			};
+	
 			// This binding is necessary to make 'this' work in the callback. Create
 			// a new function bound to this
 			_this.updateResults = _this.updateResults.bind(_this);
-			_this.updateInputValue = _this.updateInputValue.bind(_this);
+			_this.onNavigate = _this.onNavigate.bind(_this);
 			return _this;
 		}
 	
 		_createClass(App, [{
 			key: 'updateResults',
-			value: function updateResults() {
+			value: function updateResults(searchWords, start, end) {
 				var _this2 = this;
 	
-				client({ method: 'GET', path: '/search?word=' + this.state.searchWords }).done(function (response) {
-					_this2.setState({ movies: [] });
-					_this2.setState({ movies: _this2.state.movies.concat(JSON.parse(response.entity)) });
+				this.state.searchWords = searchWords;
+				this.state.start = start;
+				console.log("update results");
+				client({
+					method: 'GET',
+					path: '/search?word=' + searchWords + '&start=' + start + '&end=' + end
+				}).done(function (response) {
+					var resp = JSON.parse(response.entity);
+					_this2.setState({
+						movies: resp.movies,
+						count: resp.count
+					});
 				});
 			}
 		}, {
@@ -101,52 +114,202 @@
 				return React.createElement(
 					'div',
 					null,
-					React.createElement('input', { value: this.state.searchWord, onChange: this.updateInputValue }),
-					React.createElement(
-						'button',
-						{ disabled: !this.state.searchWords, onClick: this.updateResults },
-						'Search'
-					),
-					React.createElement(MovieList, { movies: this.state.movies })
+					React.createElement(SearchBar, { update: this.updateResults }),
+					React.createElement(MovieList, { movies: this.state.movies,
+						update: this.onNavigate,
+						start: this.state.start,
+						count: this.state.count,
+						pageSize: this.state.pageSize })
 				);
 			}
 		}, {
-			key: 'updateInputValue',
-			value: function updateInputValue(evt) {
-				var str = evt.target.value;
-				this.setState({
-					searchWords: str.match(/\S+/g)
-				});
+			key: 'onNavigate',
+			value: function onNavigate(start, end) {
+				console.log("onNavigate " + start + "-" + end);
+				this.updateResults(this.state.searchWords, start, end);
 			}
 		}]);
 	
 		return App;
 	}(React.Component);
 	
+	var SearchBar = function (_React$Component2) {
+		_inherits(SearchBar, _React$Component2);
+	
+		function SearchBar(props) {
+			_classCallCheck(this, SearchBar);
+	
+			var _this3 = _possibleConstructorReturn(this, (SearchBar.__proto__ || Object.getPrototypeOf(SearchBar)).call(this, props));
+	
+			_this3.state = {
+				searchWords: []
+			};
+	
+			_this3.updateInputValue = _this3.updateInputValue.bind(_this3);
+			_this3.updateResults = _this3.updateResults.bind(_this3);
+			return _this3;
+		}
+	
+		_createClass(SearchBar, [{
+			key: 'updateInputValue',
+			value: function updateInputValue(evt) {
+				evt.preventDefault();
+				var str = evt.target.value;
+				this.setState({
+					searchWords: str.match(/\S+/g)
+				});
+			}
+		}, {
+			key: 'updateResults',
+			value: function updateResults(evt) {
+				this.props.update(this.state.searchWords, 0, 1);
+			}
+		}, {
+			key: 'render',
+			value: function render() {
+				return React.createElement(
+					'div',
+					{ className: 'divider' },
+					React.createElement('input', { value: this.state.searchWord, onChange: this.updateInputValue }),
+					React.createElement(
+						'button',
+						{ disabled: !this.state.searchWords, onClick: this.updateResults },
+						'Search'
+					)
+				);
+			}
+		}]);
+	
+		return SearchBar;
+	}(React.Component);
 	/**
 	 * List of Movies as DIV table
 	 */
 	
 	
-	var MovieList = function (_React$Component2) {
-		_inherits(MovieList, _React$Component2);
+	var MovieList = function (_React$Component3) {
+		_inherits(MovieList, _React$Component3);
 	
-		function MovieList() {
+		function MovieList(props) {
 			_classCallCheck(this, MovieList);
 	
-			return _possibleConstructorReturn(this, (MovieList.__proto__ || Object.getPrototypeOf(MovieList)).apply(this, arguments));
+			var _this4 = _possibleConstructorReturn(this, (MovieList.__proto__ || Object.getPrototypeOf(MovieList)).call(this, props));
+	
+			_this4.state = {
+				pageIndex: 0
+			};
+			_this4.onNavigate = _this4.onNavigate.bind(_this4);
+			_this4.handleNavFirst = _this4.handleNavFirst.bind(_this4);
+			_this4.handleNavPrev = _this4.handleNavPrev.bind(_this4);
+			_this4.handleNavNext = _this4.handleNavNext.bind(_this4);
+			_this4.handleNavLast = _this4.handleNavLast.bind(_this4);
+			return _this4;
 		}
 	
 		_createClass(MovieList, [{
+			key: 'onNavigate',
+			value: function onNavigate(pi) {
+				var fromIndex;
+	
+				this.setState({ pageIndex: pi });
+	
+				fromIndex = pi * this.props.pageSize;
+				this.props.update(fromIndex, fromIndex + this.props.pageSize - 1);
+			}
+		}, {
+			key: 'handleNavFirst',
+			value: function handleNavFirst(e) {
+				this.onNavigate(0);
+			}
+		}, {
+			key: 'handleNavPrev',
+			value: function handleNavPrev(e) {
+				this.onNavigate(this.state.pageIndex - 1);
+			}
+		}, {
+			key: 'handleNavNext',
+			value: function handleNavNext(e) {
+				this.onNavigate(this.state.pageIndex + 1);
+			}
+		}, {
+			key: 'handleNavLast',
+			value: function handleNavLast(e) {
+				this.onNavigate(Math.ceil(this.props.count / this.props.pageSize) - 1);
+			}
+		}, {
 			key: 'render',
 			value: function render() {
+				var navLinks, pages, pageIndex, totalPages;
+	
 				var movies = this.props.movies.map(function (m, index) {
 					return React.createElement(MovieInfoContainer, { key: index, info: m });
 				});
+	
+				this.state.pageIndex = this.props.start / this.props.pageSize;
+	
+				pageIndex = this.state.pageIndex;
+				totalPages = Math.ceil(this.props.count / this.props.pageSize) - 1;
+	
+				navLinks = [];
+				if (pageIndex >= 1) {
+					navLinks.push(React.createElement(
+						'button',
+						{ key: 'first', onClick: this.handleNavFirst },
+						'<<'
+					));
+				}
+				if (pageIndex >= 1) {
+					navLinks.push(React.createElement(
+						'button',
+						{ key: 'prev', onClick: this.handleNavPrev },
+						'<'
+					));
+				}
+				if (pageIndex < totalPages && pageIndex >= 0) {
+					navLinks.push(React.createElement(
+						'button',
+						{ key: 'next', onClick: this.handleNavNext },
+						'>'
+					));
+				}
+				if (pageIndex < totalPages) {
+					navLinks.push(React.createElement(
+						'button',
+						{ key: 'last', onClick: this.handleNavLast },
+						'>>'
+					));
+				}
+	
+				var pages;
+				if (totalPages >= 0) {
+					pages = React.createElement(
+						'span',
+						null,
+						'Page ',
+						pageIndex + 1,
+						' / ',
+						totalPages + 1,
+						'  (',
+						this.props.count,
+						' records found) '
+					);
+				}
+	
 				return React.createElement(
 					'div',
-					{ className: 'table' },
-					movies
+					null,
+					React.createElement(
+						'div',
+						{ className: 'table' },
+						movies
+					),
+					React.createElement(
+						'div',
+						null,
+						navLinks,
+						' ',
+						pages
+					)
 				);
 			}
 		}]);
@@ -154,24 +317,19 @@
 		return MovieList;
 	}(React.Component);
 	
-	var MovieInfoContainer = function (_React$Component3) {
-		_inherits(MovieInfoContainer, _React$Component3);
+	var MovieInfoContainer = function (_React$Component4) {
+		_inherits(MovieInfoContainer, _React$Component4);
 	
-		function MovieInfoContainer(props) {
+		function MovieInfoContainer() {
 			_classCallCheck(this, MovieInfoContainer);
 	
-			var _this4 = _possibleConstructorReturn(this, (MovieInfoContainer.__proto__ || Object.getPrototypeOf(MovieInfoContainer)).call(this, props));
-	
-			_this4.state = {
-				info: props.info
-			};
-			return _this4;
+			return _possibleConstructorReturn(this, (MovieInfoContainer.__proto__ || Object.getPrototypeOf(MovieInfoContainer)).apply(this, arguments));
 		}
 	
 		_createClass(MovieInfoContainer, [{
 			key: 'render',
 			value: function render() {
-				return React.createElement(MovieInfo, this._extract(this.state.info));
+				return React.createElement(MovieInfo, this._extract(this.props.info));
 			}
 		}, {
 			key: '_extract',
@@ -23718,7 +23876,7 @@
   \***************************/
 /***/ (function(module, exports, __webpack_require__) {
 
-	var __WEBPACK_AMD_DEFINE_RESULT__;var require;/* WEBPACK VAR INJECTION */(function(process) {/** @license MIT License (c) copyright 2010-2014 original author or authors */
+	var require;var __WEBPACK_AMD_DEFINE_RESULT__;/* WEBPACK VAR INJECTION */(function(process) {/** @license MIT License (c) copyright 2010-2014 original author or authors */
 	/** @author Brian Cavalier */
 	/** @author John Hann */
 	

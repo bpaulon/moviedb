@@ -33,7 +33,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Configuration
 @Slf4j
-public class RedisMovieInfoFeeder implements CommandLineRunner {
+public class RedisMovieInfoLoader implements CommandLineRunner {
 
 	public final static String MOVIES_KEY = "movies";
 	public final static String MOVIE_SEQUENCE_KEY = "movie:id";

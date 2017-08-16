@@ -18,11 +18,23 @@ public class SearchRestController {
 	private BeanFactory beanFactory;
 
 	@GetMapping("search")
-	public List<MovieExtendedInfo> search(@RequestParam(value = "word", required = true) List<String> words) {
-		log.info("search movies by words: {}",words);
-		
-		MovieByStoryMatcher movieMatcher = beanFactory.getBean(MovieByStoryMatcher.class, words);
-		return movieMatcher.match();
-	}
+	public MovieSearchResult search(@RequestParam(value = "word", required = true) List<String> words,
+			@RequestParam(value = "start", required = true) Integer startIndex,
+			@RequestParam(value = "end", required = true) Integer endIndex) {
 
+		log.info("search movies by words: {} in range {}-{}", words, startIndex, endIndex);
+
+		MovieByStoryMatcher movieMatcher = beanFactory.getBean(MovieByStoryMatcher.class, words);
+		movieMatcher.match(startIndex, endIndex);
+
+		List<MovieExtendedInfo> movies = movieMatcher.matching();
+		Long totalCount = movieMatcher.resultsSize();
+		MovieSearchResult msi = MovieSearchResult.builder()
+				.movies(movies)
+				.count(totalCount)
+				.build();
+
+		log.debug("result: {}", msi);
+		return msi;
+	}
 }

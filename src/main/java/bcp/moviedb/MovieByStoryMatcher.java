@@ -1,7 +1,7 @@
 package bcp.moviedb;
 
-import static bcp.moviedb.config.RedisMovieInfoFeeder.MOVIES_KEY;
-import static bcp.moviedb.config.RedisMovieInfoFeeder.WORD_KEY_PREFIX;
+import static bcp.moviedb.config.RedisMovieInfoLoader.MOVIES_KEY;
+import static bcp.moviedb.config.RedisMovieInfoLoader.WORD_KEY_PREFIX;
 import static java.util.stream.Collectors.toList;
 
 import java.util.List;
@@ -33,13 +33,21 @@ public class MovieByStoryMatcher {
 	/** Use double metaphone to encode the search words */
 	private DoubleMetaphone doubleMetaphone;
 
+	private List<MovieExtendedInfo> matchingList;
+	
+	private Long resultSize;
+	
+	
 	public MovieByStoryMatcher(List<String> words) {
 		this.words = words;
 		doubleMetaphone = new DoubleMetaphone();
 	}
 
+	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public List<MovieExtendedInfo> match() {
+	public void match(Integer startIndex, Integer endIndex) {
+		startIndex = startIndex == null ? 0:startIndex;
+		endIndex = endIndex == null? -1: endIndex;
 		
 		List<String> searchKeys = words.stream()
 				.filter(s -> s != null && !s.isEmpty())
@@ -49,9 +57,11 @@ public class MovieByStoryMatcher {
 		log.debug("Match movie by encoded keys: {}", searchKeys);
 
 		// get all the movie ids by intersecting the sets
-		String resultsSetKey = "search:" + searchKeys.toString().replace(WORD_KEY_PREFIX,"");
+		String resultsSetKey = buildSearchResultKey(searchKeys);
 		template.opsForZSet()
 				.intersectAndStore(searchKeys.get(0), searchKeys, resultsSetKey);
+		
+		resultSize = template.opsForZSet().zCard(resultsSetKey);
 		// expire the set to avoid cluttering
 		template.expire(resultsSetKey, 60, TimeUnit.SECONDS);
 
@@ -60,16 +70,28 @@ public class MovieByStoryMatcher {
 		// Sort the ids in the reverse order so the first movie id will be the one with 
 		// the highest frequency of the searched words
 		Set<TypedTuple<String>> ids = (Set) template.opsForZSet()
-				.reverseRangeWithScores(resultsSetKey, 0, -1);
+				.reverseRangeWithScores(resultsSetKey, startIndex, endIndex);
 
 		// get all the movies info for the found ids
 		List<MovieExtendedInfo> movies = ids.stream()
 				.map(this::getMovieById)
 				.collect(toList());
 
-		return movies;
+		this.matchingList = movies;
 	}
 
+	public List<MovieExtendedInfo> matching() {
+		return matchingList;
+	}
+	
+	public Long resultsSize() {
+		return resultSize;
+	}
+	
+	private String buildSearchResultKey(List<String> searchKeys) {
+		return "search:" + searchKeys.toString().replace(WORD_KEY_PREFIX,"");
+	}
+	
 	private String mapWordToSearchKey(String word) {
 		String mp = doubleMetaphone.doubleMetaphone(word, false);
 		String key = WORD_KEY_PREFIX + mp;
