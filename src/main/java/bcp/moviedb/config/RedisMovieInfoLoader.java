@@ -21,6 +21,7 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.data.redis.core.RedisOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.SessionCallback;
+import org.springframework.data.redis.core.ValueOperations;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -51,6 +52,9 @@ public class RedisMovieInfoLoader implements CommandLineRunner {
 	
 	@Autowired
 	private RedisTemplate<String, Object> template;
+	
+	@javax.annotation.Resource(name="redisTemplate")
+	private ValueOperations<String, Object> valueOps;
 
 	@Override
 	public void run(String... args) throws Exception {
@@ -59,13 +63,12 @@ public class RedisMovieInfoLoader implements CommandLineRunner {
 
 	private void initMovies() throws Exception {
 		List<MovieExtendedInfo> movies = readMovies();
-		template.opsForValue()
-				.set(MOVIE_SEQUENCE_KEY, 0L);
+		valueOps.set(MOVIE_SEQUENCE_KEY, 0L);
+		
 		movies.forEach(movie -> {
 			// id must be incremented outside the transaction - otherwise the
 			// INCR operation only gets QUEUED and NO value is returned
-			long movieId = template.opsForValue()
-					.increment(MOVIE_SEQUENCE_KEY, 1L);
+			long movieId = valueOps.increment(MOVIE_SEQUENCE_KEY, 1L);
 			storeMovie(movie, movieId);
 		});
 	}

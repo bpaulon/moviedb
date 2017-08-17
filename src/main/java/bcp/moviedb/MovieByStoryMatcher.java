@@ -8,11 +8,14 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import javax.annotation.Resource;
+
 import org.apache.commons.codec.language.DoubleMetaphone;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Scope;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.data.redis.core.ZSetOperations.TypedTuple;
 import org.springframework.stereotype.Component;
 
@@ -26,6 +29,9 @@ public class MovieByStoryMatcher {
 	@Autowired
 	@Qualifier("RedisTemplate")
 	private RedisTemplate<String, Object> template;
+	
+	@Resource(name="redisTemplate")
+	private ZSetOperations<String, Object> zsetOps;
 
 	/** The search words	 */
 	private List<String> words;
@@ -42,13 +48,12 @@ public class MovieByStoryMatcher {
 		this.words = words;
 		doubleMetaphone = new DoubleMetaphone();
 	}
-
 	
-	@SuppressWarnings({ "unchecked", "rawtypes" })
+	
 	public void match(Integer startIndex, Integer endIndex) {
-		startIndex = startIndex == null ? 0:startIndex;
-		endIndex = endIndex == null? -1: endIndex;
-		
+		startIndex = startIndex == null ? 0 : startIndex;
+		endIndex = endIndex == null ? -1 : endIndex;
+
 		List<String> searchKeys = words.stream()
 				.filter(s -> s != null && !s.isEmpty())
 				.map(this::mapWordToSearchKey)
@@ -57,20 +62,21 @@ public class MovieByStoryMatcher {
 		log.debug("Match movie by encoded keys: {}", searchKeys);
 
 		// get all the movie ids by intersecting the sets
-		String resultsSetKey = buildSearchResultKey(searchKeys);
-		template.opsForZSet()
-				.intersectAndStore(searchKeys.get(0), searchKeys, resultsSetKey);
+		final String resultSetKey = buildSearchResultKey(searchKeys);
 		
-		resultSize = template.opsForZSet().zCard(resultsSetKey);
+		
+		zsetOps.intersectAndStore(searchKeys.get(0), searchKeys, resultSetKey);
+		
+		resultSize = zsetOps.zCard(resultSetKey);
 		// expire the set to avoid cluttering
-		template.expire(resultsSetKey, 60, TimeUnit.SECONDS);
+		template.expire(resultSetKey, 60, TimeUnit.SECONDS);
 
 		
 		// Each movie id has an associated score which is the frequency of the searched words
 		// Sort the ids in the reverse order so the first movie id will be the one with 
 		// the highest frequency of the searched words
-		Set<TypedTuple<String>> ids = (Set) template.opsForZSet()
-				.reverseRangeWithScores(resultsSetKey, startIndex, endIndex);
+		@SuppressWarnings({ "unchecked", "rawtypes" })
+		Set<TypedTuple<String>> ids = (Set) zsetOps.reverseRangeWithScores(resultSetKey, startIndex, endIndex);
 
 		// get all the movies info for the found ids
 		List<MovieExtendedInfo> movies = ids.stream()

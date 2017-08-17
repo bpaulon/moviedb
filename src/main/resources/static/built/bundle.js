@@ -51,21 +51,37 @@
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
+	var _react = __webpack_require__(/*! react */ 1);
+	
+	var _react2 = _interopRequireDefault(_react);
+	
+	var _reactDom = __webpack_require__(/*! react-dom */ 37);
+	
+	var _reactDom2 = _interopRequireDefault(_reactDom);
+	
+	var _client = __webpack_require__(/*! ./client */ 184);
+	
+	var _client2 = _interopRequireDefault(_client);
+	
+	var _MovieList = __webpack_require__(/*! ./MovieList.jsx */ 231);
+	
+	var _MovieList2 = _interopRequireDefault(_MovieList);
+	
+	var _SearchBar = __webpack_require__(/*! ./SearchBar.jsx */ 233);
+	
+	var _SearchBar2 = _interopRequireDefault(_SearchBar);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 	
 	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
 	
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 	
-	var React = __webpack_require__(/*! react */ 1);
-	var ReactDOM = __webpack_require__(/*! react-dom */ 37);
-	var client = __webpack_require__(/*! ./client */ 184);
-	var dateFormat = __webpack_require__(/*! dateformat */ 230);
-	
 	/**
 	 * App Component
 	 */
-	
 	var App = function (_React$Component) {
 		_inherits(App, _React$Component);
 	
@@ -96,8 +112,8 @@
 	
 				this.state.searchWords = searchWords;
 				this.state.start = start;
-				console.log("update results");
-				client({
+	
+				(0, _client2.default)({
 					method: 'GET',
 					path: '/search?word=' + searchWords + '&start=' + start + '&end=' + end
 				}).done(function (response) {
@@ -111,11 +127,11 @@
 		}, {
 			key: 'render',
 			value: function render() {
-				return React.createElement(
+				return _react2.default.createElement(
 					'div',
 					null,
-					React.createElement(SearchBar, { update: this.updateResults }),
-					React.createElement(MovieList, { movies: this.state.movies,
+					_react2.default.createElement(_SearchBar2.default, { update: this.updateResults }),
+					_react2.default.createElement(_MovieList2.default, { movies: this.state.movies,
 						update: this.onNavigate,
 						start: this.state.start,
 						count: this.state.count,
@@ -131,297 +147,9 @@
 		}]);
 	
 		return App;
-	}(React.Component);
+	}(_react2.default.Component);
 	
-	var SearchBar = function (_React$Component2) {
-		_inherits(SearchBar, _React$Component2);
-	
-		function SearchBar(props) {
-			_classCallCheck(this, SearchBar);
-	
-			var _this3 = _possibleConstructorReturn(this, (SearchBar.__proto__ || Object.getPrototypeOf(SearchBar)).call(this, props));
-	
-			_this3.state = {
-				searchWords: []
-			};
-	
-			_this3.updateInputValue = _this3.updateInputValue.bind(_this3);
-			_this3.updateResults = _this3.updateResults.bind(_this3);
-			return _this3;
-		}
-	
-		_createClass(SearchBar, [{
-			key: 'updateInputValue',
-			value: function updateInputValue(evt) {
-				evt.preventDefault();
-				var str = evt.target.value;
-				this.setState({
-					searchWords: str.match(/\S+/g)
-				});
-			}
-		}, {
-			key: 'updateResults',
-			value: function updateResults(evt) {
-				this.props.update(this.state.searchWords, 0, 1);
-			}
-		}, {
-			key: 'render',
-			value: function render() {
-				return React.createElement(
-					'div',
-					{ className: 'divider' },
-					React.createElement('input', { value: this.state.searchWord, onChange: this.updateInputValue }),
-					React.createElement(
-						'button',
-						{ disabled: !this.state.searchWords, onClick: this.updateResults },
-						'Search'
-					)
-				);
-			}
-		}]);
-	
-		return SearchBar;
-	}(React.Component);
-	/**
-	 * List of Movies as DIV table
-	 */
-	
-	
-	var MovieList = function (_React$Component3) {
-		_inherits(MovieList, _React$Component3);
-	
-		function MovieList(props) {
-			_classCallCheck(this, MovieList);
-	
-			var _this4 = _possibleConstructorReturn(this, (MovieList.__proto__ || Object.getPrototypeOf(MovieList)).call(this, props));
-	
-			_this4.state = {
-				pageIndex: 0
-			};
-			_this4.onNavigate = _this4.onNavigate.bind(_this4);
-			_this4.handleNavFirst = _this4.handleNavFirst.bind(_this4);
-			_this4.handleNavPrev = _this4.handleNavPrev.bind(_this4);
-			_this4.handleNavNext = _this4.handleNavNext.bind(_this4);
-			_this4.handleNavLast = _this4.handleNavLast.bind(_this4);
-			return _this4;
-		}
-	
-		_createClass(MovieList, [{
-			key: 'onNavigate',
-			value: function onNavigate(pi) {
-				var fromIndex;
-	
-				this.setState({ pageIndex: pi });
-	
-				fromIndex = pi * this.props.pageSize;
-				this.props.update(fromIndex, fromIndex + this.props.pageSize - 1);
-			}
-		}, {
-			key: 'handleNavFirst',
-			value: function handleNavFirst(e) {
-				this.onNavigate(0);
-			}
-		}, {
-			key: 'handleNavPrev',
-			value: function handleNavPrev(e) {
-				this.onNavigate(this.state.pageIndex - 1);
-			}
-		}, {
-			key: 'handleNavNext',
-			value: function handleNavNext(e) {
-				this.onNavigate(this.state.pageIndex + 1);
-			}
-		}, {
-			key: 'handleNavLast',
-			value: function handleNavLast(e) {
-				this.onNavigate(Math.ceil(this.props.count / this.props.pageSize) - 1);
-			}
-		}, {
-			key: 'render',
-			value: function render() {
-				var navLinks, pages, pageIndex, totalPages;
-	
-				var movies = this.props.movies.map(function (m, index) {
-					return React.createElement(MovieInfoContainer, { key: index, info: m });
-				});
-	
-				this.state.pageIndex = this.props.start / this.props.pageSize;
-	
-				pageIndex = this.state.pageIndex;
-				totalPages = Math.ceil(this.props.count / this.props.pageSize) - 1;
-	
-				navLinks = [];
-				if (pageIndex >= 1) {
-					navLinks.push(React.createElement(
-						'button',
-						{ key: 'first', onClick: this.handleNavFirst },
-						'<<'
-					));
-				}
-				if (pageIndex >= 1) {
-					navLinks.push(React.createElement(
-						'button',
-						{ key: 'prev', onClick: this.handleNavPrev },
-						'<'
-					));
-				}
-				if (pageIndex < totalPages && pageIndex >= 0) {
-					navLinks.push(React.createElement(
-						'button',
-						{ key: 'next', onClick: this.handleNavNext },
-						'>'
-					));
-				}
-				if (pageIndex < totalPages) {
-					navLinks.push(React.createElement(
-						'button',
-						{ key: 'last', onClick: this.handleNavLast },
-						'>>'
-					));
-				}
-	
-				var pages;
-				if (totalPages >= 0) {
-					pages = React.createElement(
-						'span',
-						null,
-						'Page ',
-						pageIndex + 1,
-						' / ',
-						totalPages + 1,
-						'  (',
-						this.props.count,
-						' records found) '
-					);
-				}
-	
-				return React.createElement(
-					'div',
-					null,
-					React.createElement(
-						'div',
-						{ className: 'table' },
-						movies
-					),
-					React.createElement(
-						'div',
-						null,
-						navLinks,
-						' ',
-						pages
-					)
-				);
-			}
-		}]);
-	
-		return MovieList;
-	}(React.Component);
-	
-	var MovieInfoContainer = function (_React$Component4) {
-		_inherits(MovieInfoContainer, _React$Component4);
-	
-		function MovieInfoContainer() {
-			_classCallCheck(this, MovieInfoContainer);
-	
-			return _possibleConstructorReturn(this, (MovieInfoContainer.__proto__ || Object.getPrototypeOf(MovieInfoContainer)).apply(this, arguments));
-		}
-	
-		_createClass(MovieInfoContainer, [{
-			key: 'render',
-			value: function render() {
-				return React.createElement(MovieInfo, this._extract(this.props.info));
-			}
-		}, {
-			key: '_extract',
-			value: function _extract(info) {
-				return {
-					"title": info.movie.name + " (Released: " + dateFormat(Date.parse(info.movie.releaseDate), "mmmm - yyyy") + ")",
-					"director": info.movie.director,
-					"story": info.movie.plot,
-					"image": "data:image/jpg;base64," + info.image
-				};
-			}
-		}]);
-	
-		return MovieInfoContainer;
-	}(React.Component);
-	
-	/**
-	 * Movie component
-	 */
-	
-	
-	function MovieInfo(props) {
-		var _ref = [props.title, props.director, props.story, props.image],
-		    title = _ref[0],
-		    director = _ref[1],
-		    story = _ref[2],
-		    image = _ref[3];
-	
-	
-		return React.createElement(
-			'div',
-			{ className: 'divider' },
-			' ',
-			React.createElement(
-				'div',
-				{ className: 'row' },
-				React.createElement(
-					'div',
-					{ className: 'cell' },
-					React.createElement(
-						'div',
-						{ className: 'row' },
-						React.createElement(
-							'div',
-							{ className: 'cell' },
-							'Title'
-						),
-						React.createElement(
-							'div',
-							{ className: 'cell' },
-							title
-						)
-					),
-					React.createElement(
-						'div',
-						{ className: 'row' },
-						React.createElement(
-							'div',
-							{ className: 'cell' },
-							'Director'
-						),
-						React.createElement(
-							'div',
-							{ className: 'cell' },
-							director
-						)
-					),
-					React.createElement(
-						'div',
-						{ className: 'row' },
-						React.createElement(
-							'div',
-							{ className: 'cell' },
-							'Story'
-						),
-						React.createElement(
-							'div',
-							{ className: 'cell' },
-							story
-						)
-					)
-				),
-				React.createElement(
-					'div',
-					null,
-					React.createElement('img', { src: image })
-				)
-			)
-		);
-	}
-	
-	ReactDOM.render(React.createElement(App, null), document.getElementById('react'));
+	_reactDom2.default.render(_react2.default.createElement(App, null), document.getElementById('react'));
 
 /***/ }),
 /* 1 */
@@ -28428,6 +28156,388 @@
 	  }
 	})(this);
 
+
+/***/ }),
+/* 231 */
+/*!***********************************!*\
+  !*** ./src/main/js/MovieList.jsx ***!
+  \***********************************/
+/***/ (function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+	
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	
+	var _react = __webpack_require__(/*! react */ 1);
+	
+	var _react2 = _interopRequireDefault(_react);
+	
+	var _MovieInfoContainer = __webpack_require__(/*! ./MovieInfoContainer.jsx */ 232);
+	
+	var _MovieInfoContainer2 = _interopRequireDefault(_MovieInfoContainer);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+	
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+	
+	/**
+	 * List of Movies as DIV table
+	 */
+	var MovieList = function (_React$Component) {
+		_inherits(MovieList, _React$Component);
+	
+		function MovieList(props) {
+			_classCallCheck(this, MovieList);
+	
+			var _this = _possibleConstructorReturn(this, (MovieList.__proto__ || Object.getPrototypeOf(MovieList)).call(this, props));
+	
+			_this.state = {
+				pageIndex: 0
+			};
+			_this.onNavigate = _this.onNavigate.bind(_this);
+			_this.handleNavFirst = _this.handleNavFirst.bind(_this);
+			_this.handleNavPrev = _this.handleNavPrev.bind(_this);
+			_this.handleNavNext = _this.handleNavNext.bind(_this);
+			_this.handleNavLast = _this.handleNavLast.bind(_this);
+			return _this;
+		}
+	
+		_createClass(MovieList, [{
+			key: 'onNavigate',
+			value: function onNavigate(pi) {
+				var fromIndex;
+	
+				this.setState({
+					pageIndex: pi
+				});
+				fromIndex = pi * this.props.pageSize;
+				this.props.update(fromIndex, fromIndex + this.props.pageSize - 1);
+			}
+		}, {
+			key: 'handleNavFirst',
+			value: function handleNavFirst(e) {
+				this.onNavigate(0);
+			}
+		}, {
+			key: 'handleNavPrev',
+			value: function handleNavPrev(e) {
+				this.onNavigate(this.state.pageIndex - 1);
+			}
+		}, {
+			key: 'handleNavNext',
+			value: function handleNavNext(e) {
+				this.onNavigate(this.state.pageIndex + 1);
+			}
+		}, {
+			key: 'handleNavLast',
+			value: function handleNavLast(e) {
+				this.onNavigate(Math.ceil(this.props.count / this.props.pageSize) - 1);
+			}
+		}, {
+			key: 'render',
+			value: function render() {
+				var navLinks, pages, pageIndex, totalPages;
+	
+				var movies = this.props.movies.map(function (m, index) {
+					return _react2.default.createElement(_MovieInfoContainer2.default, { key: index, info: m });
+				});
+	
+				this.state.pageIndex = this.props.start / this.props.pageSize;
+	
+				pageIndex = this.state.pageIndex;
+				totalPages = Math.ceil(this.props.count / this.props.pageSize) - 1;
+	
+				navLinks = [];
+				if (pageIndex >= 1) {
+					navLinks.push(_react2.default.createElement(
+						'button',
+						{ key: 'first', onClick: this.handleNavFirst },
+						'<<'
+					));
+				}
+				if (pageIndex >= 1) {
+					navLinks.push(_react2.default.createElement(
+						'button',
+						{ key: 'prev', onClick: this.handleNavPrev },
+						'<'
+					));
+				}
+				if (pageIndex < totalPages && pageIndex >= 0) {
+					navLinks.push(_react2.default.createElement(
+						'button',
+						{ key: 'next', onClick: this.handleNavNext },
+						'>'
+					));
+				}
+				if (pageIndex < totalPages) {
+					navLinks.push(_react2.default.createElement(
+						'button',
+						{ key: 'last', onClick: this.handleNavLast },
+						'>>'
+					));
+				}
+	
+				if (totalPages >= 0) {
+					pages = _react2.default.createElement(
+						'span',
+						null,
+						'Page ',
+						pageIndex + 1,
+						' / ',
+						totalPages + 1,
+						'  (',
+						this.props.count,
+						' records found)'
+					);
+				}
+	
+				return _react2.default.createElement(
+					'div',
+					null,
+					_react2.default.createElement(
+						'div',
+						{ className: 'table' },
+						movies
+					),
+					_react2.default.createElement(
+						'div',
+						null,
+						navLinks,
+						'\xA0',
+						pages
+					)
+				);
+			}
+		}]);
+	
+		return MovieList;
+	}(_react2.default.Component);
+	
+	exports.default = MovieList;
+
+/***/ }),
+/* 232 */
+/*!********************************************!*\
+  !*** ./src/main/js/MovieInfoContainer.jsx ***!
+  \********************************************/
+/***/ (function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	
+	var _react = __webpack_require__(/*! react */ 1);
+	
+	var _react2 = _interopRequireDefault(_react);
+	
+	var _dateformat = __webpack_require__(/*! dateformat */ 230);
+	
+	var _dateformat2 = _interopRequireDefault(_dateformat);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+	
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+	
+	var MovieInfoContainer = function (_React$Component) {
+	    _inherits(MovieInfoContainer, _React$Component);
+	
+	    function MovieInfoContainer() {
+	        _classCallCheck(this, MovieInfoContainer);
+	
+	        return _possibleConstructorReturn(this, (MovieInfoContainer.__proto__ || Object.getPrototypeOf(MovieInfoContainer)).apply(this, arguments));
+	    }
+	
+	    _createClass(MovieInfoContainer, [{
+	        key: 'render',
+	        value: function render() {
+	            return _react2.default.createElement(MovieInfo, this._extract(this.props.info));
+	        }
+	    }, {
+	        key: '_extract',
+	        value: function _extract(info) {
+	
+	            return {
+	                "title": info.movie.name + " (Released: " + (0, _dateformat2.default)(Date.parse(info.movie.releaseDate), "mmmm yyyy") + ")",
+	                "director": info.movie.director,
+	                "story": info.movie.plot,
+	                "image": "data:image/jpg;base64," + info.image
+	            };
+	        }
+	    }]);
+	
+	    return MovieInfoContainer;
+	}(_react2.default.Component);
+	
+	/**
+	 * Movie component
+	 */
+	
+	
+	exports.default = MovieInfoContainer;
+	function MovieInfo(props) {
+	    var _ref = [props.title, props.director, props.story, props.image],
+	        title = _ref[0],
+	        director = _ref[1],
+	        story = _ref[2],
+	        image = _ref[3];
+	
+	
+	    return _react2.default.createElement(
+	        'div',
+	        { className: 'divider' },
+	        ' ',
+	        _react2.default.createElement(
+	            'div',
+	            { className: 'row' },
+	            _react2.default.createElement(
+	                'div',
+	                { className: 'cell' },
+	                _react2.default.createElement(
+	                    'div',
+	                    { className: 'row' },
+	                    _react2.default.createElement(
+	                        'div',
+	                        { className: 'cell' },
+	                        'Title'
+	                    ),
+	                    _react2.default.createElement(
+	                        'div',
+	                        { className: 'cell' },
+	                        title
+	                    )
+	                ),
+	                _react2.default.createElement(
+	                    'div',
+	                    { className: 'row' },
+	                    _react2.default.createElement(
+	                        'div',
+	                        { className: 'cell' },
+	                        'Director'
+	                    ),
+	                    _react2.default.createElement(
+	                        'div',
+	                        { className: 'cell' },
+	                        director
+	                    )
+	                ),
+	                _react2.default.createElement(
+	                    'div',
+	                    { className: 'row' },
+	                    _react2.default.createElement(
+	                        'div',
+	                        { className: 'cell' },
+	                        'Story'
+	                    ),
+	                    _react2.default.createElement(
+	                        'div',
+	                        { className: 'cell' },
+	                        story
+	                    )
+	                )
+	            ),
+	            _react2.default.createElement(
+	                'div',
+	                null,
+	                _react2.default.createElement('img', { src: image })
+	            )
+	        )
+	    );
+	}
+
+/***/ }),
+/* 233 */
+/*!***********************************!*\
+  !*** ./src/main/js/SearchBar.jsx ***!
+  \***********************************/
+/***/ (function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	
+	var _react = __webpack_require__(/*! react */ 1);
+	
+	var _react2 = _interopRequireDefault(_react);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+	
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+	
+	var SearchBar = function (_React$Component) {
+	    _inherits(SearchBar, _React$Component);
+	
+	    function SearchBar(props) {
+	        _classCallCheck(this, SearchBar);
+	
+	        var _this = _possibleConstructorReturn(this, (SearchBar.__proto__ || Object.getPrototypeOf(SearchBar)).call(this, props));
+	
+	        _this.state = {
+	            searchWords: []
+	        };
+	
+	        _this.updateInputValue = _this.updateInputValue.bind(_this);
+	        _this.updateResults = _this.updateResults.bind(_this);
+	        return _this;
+	    }
+	
+	    _createClass(SearchBar, [{
+	        key: 'updateInputValue',
+	        value: function updateInputValue(evt) {
+	            evt.preventDefault();
+	            var str = evt.target.value;
+	            this.setState({
+	                searchWords: str.match(/\S+/g)
+	            });
+	        }
+	    }, {
+	        key: 'updateResults',
+	        value: function updateResults(evt) {
+	            this.props.update(this.state.searchWords, 0, 1);
+	        }
+	    }, {
+	        key: 'render',
+	        value: function render() {
+	            return _react2.default.createElement(
+	                'div',
+	                { className: 'divider' },
+	                _react2.default.createElement('input', { value: this.state.searchWord, onChange: this.updateInputValue }),
+	                _react2.default.createElement(
+	                    'button',
+	                    { disabled: !this.state.searchWords, onClick: this.updateResults },
+	                    'Search'
+	                )
+	            );
+	        }
+	    }]);
+	
+	    return SearchBar;
+	}(_react2.default.Component);
+	
+	exports.default = SearchBar;
 
 /***/ })
 /******/ ]);
