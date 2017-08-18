@@ -62,7 +62,7 @@ public class MovieByStoryMatcher {
 		log.debug("Match movie by encoded keys: {}", searchKeys);
 
 		// get all the movie ids by intersecting the sets
-		final String resultSetKey = buildSearchResultKey(searchKeys);
+		final String resultSetKey = buildSearchResultKey();
 		
 		
 		zsetOps.intersectAndStore(searchKeys.get(0), searchKeys, resultSetKey);
@@ -94,8 +94,8 @@ public class MovieByStoryMatcher {
 		return resultSize;
 	}
 	
-	private String buildSearchResultKey(List<String> searchKeys) {
-		return "search:" + searchKeys.toString().replace(WORD_KEY_PREFIX,"");
+	private String buildSearchResultKey() {
+		return "search:" + words;
 	}
 	
 	private String mapWordToSearchKey(String word) {
