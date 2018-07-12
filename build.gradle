@@ -9,8 +9,8 @@ buildscript {
 // For spring-boot gradle integration see:
 // http://docs.spring.io/spring-boot/docs/current/reference/html/build-tool-plugins-gradle-plugin.html
 plugins {
-	id 'org.springframework.boot' version '1.5.3.RELEASE'
-	id "com.moowork.node" version "0.12"
+	id 'org.springframework.boot' version '1.5.7.RELEASE'
+	id "com.moowork.node" version "1.2.0"
 }
 
 apply plugin: 'org.springframework.boot'
@@ -26,6 +26,13 @@ eclipse {
 	}
 }
 
+nodeSetup.onlyIf {
+    !nodeSetup.nodeDir.exists()
+}
+
+npmSetup.onlyIf {
+    !npmSetup.npmDir.exists()
+}
 
 tasks.withType(JavaCompile) { 
 	options.encoding = 'UTF-8' 
@@ -40,7 +47,7 @@ repositories {
 	
 group = 'bcp.spring.moviedb'
 version = '1.0-SNAPSHOT'
-description = "AngularJS to Spring Boot"
+description = "React to Spring Boot"
 
 junitPlatform {
 	platformVersion = "1.0.0-M4"

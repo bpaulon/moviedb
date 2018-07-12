@@ -16,13 +16,14 @@ public class WebApplicationConfig extends WebMvcConfigurerAdapter {
 
 	@Bean
 	// primary JSON object mapper used by REST Controllers
+	@SuppressWarnings({"squid:S1488"})
 	public ObjectMapper objectMapper() {
 		ObjectMapper mapper = Jackson2ObjectMapperBuilder.json().indentOutput(true)
 				.featuresToDisable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
 				.build();
 		
 		// optionally register the JSR-301 module for deserialization of java.time.* types
-		// mapper.registerModule(new JavaTimeModule());
+		// @see ObjectMapper.registerModule(new JavaTimeModule())
 		return mapper;
 	}
 

@@ -46,7 +46,7 @@ public class RedisConfiguration {
 	@Qualifier("RedisTemplate")
 	RedisTemplate<String, Object> redisTemplate() {
 
-		final RedisTemplate<String, Object> template = new RedisTemplate<String, Object>();
+		final RedisTemplate<String, Object> template = new RedisTemplate<>();
 		template.setConnectionFactory(jedisConnectionFactory());
 
 		// these are required to ensure keys and values are correctly serialized

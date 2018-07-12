@@ -1,8 +1,9 @@
 package bcp.moviedb.config;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,15 +18,13 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.Resource;
-import org.springframework.dao.DataAccessException;
 import org.springframework.data.redis.core.RedisOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.SessionCallback;
 import org.springframework.data.redis.core.ValueOperations;
+import org.springframework.util.StreamUtils;
 
-import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import bcp.moviedb.MovieExtendedInfo;
@@ -36,9 +35,9 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class RedisMovieInfoLoader implements CommandLineRunner {
 
-	public final static String MOVIES_KEY = "movies";
-	public final static String MOVIE_SEQUENCE_KEY = "movie:id";
-	public final static String WORD_KEY_PREFIX = "word:";
+	public static final String MOVIES_KEY = "movies";
+	public static final String MOVIE_SEQUENCE_KEY = "movie:id";
+	public static final String WORD_KEY_PREFIX = "word:";
 
 	@Autowired
 	@Qualifier("yaml")
@@ -61,7 +60,7 @@ public class RedisMovieInfoLoader implements CommandLineRunner {
 		initMovies();
 	}
 
-	private void initMovies() throws Exception {
+	private void initMovies() throws IOException {
 		List<MovieExtendedInfo> movies = readMovies();
 		valueOps.set(MOVIE_SEQUENCE_KEY, 0L);
 		
@@ -73,8 +72,9 @@ public class RedisMovieInfoLoader implements CommandLineRunner {
 		});
 	}
 
-	private List<MovieExtendedInfo> readMovies() throws JsonParseException, JsonMappingException, IOException {
-		List<MovieLocalInfo> movieConfig = yamlMapper.readValue(movieResource.getFile(),
+	@SuppressWarnings({"squid:S1488"})
+	private List<MovieExtendedInfo> readMovies() throws IOException {
+		List<MovieLocalInfo> movieConfig = yamlMapper.readValue( movieResource.getInputStream(),
 				new TypeReference<List<MovieLocalInfo>>() {});
 
 		List<MovieExtendedInfo> extMovies = movieConfig.stream()
@@ -90,6 +90,7 @@ public class RedisMovieInfoLoader implements CommandLineRunner {
 	 * @param m - local info 
 	 * @return - external info
 	 */
+	@SuppressWarnings({"squid:S1488"})
 	private MovieExtendedInfo buildInfo(MovieLocalInfo m) {
 		byte[] image = loadImageFromFile(m.getImageFileName());
 		
@@ -100,11 +101,12 @@ public class RedisMovieInfoLoader implements CommandLineRunner {
 		return mei;
 	}
 	
-	private void storeMovie(MovieExtendedInfo info, long movieId) {
-		template.execute(new SessionCallback<List<Object>>() {
+	private void storeMovie(MovieExtendedInfo info, long movieId) { 
+	  
+	  template.execute(new SessionCallback<List<Object>>() {
 			
 			@SuppressWarnings({ "unchecked", "rawtypes" })
-			public List<Object> execute(RedisOperations operations) throws DataAccessException {
+			public List<Object> execute(RedisOperations operations) {
 				// begin transaction. 
 				operations.multi();
 
@@ -125,6 +127,7 @@ public class RedisMovieInfoLoader implements CommandLineRunner {
 		
 	}
 
+	@SuppressWarnings({"squid:S1488"})
 	private Map<String, Integer> buildSearchKeysWithFrequency(MovieExtendedInfo info) {
 		MovieInfo mi = info.getMovie();
 		String text = mi.getPlot() + mi.getName();
@@ -156,21 +159,25 @@ public class RedisMovieInfoLoader implements CommandLineRunner {
 			// Optionally store the alternate metaphone encoding
 		}
 
-		log.debug("found in input: {}", words);
+		log.debug("Found in input: {}", words);
 		return words;
 	}
 	
 	private byte[] loadImageFromFile(String filename) {
 		byte[] fileContent = new byte[] {};
-
+		
 		try {
-			Path imagePath = imagesResourcePath.getFile()
-					.toPath()
-					.resolve(filename);
-			fileContent = Files.readAllBytes(imagePath);
-			log.info("image loaded from {}", imagePath.toString());
-		} catch (IOException e) {
-			log.error("could not load image from {}", filename, e);
+		  URI imagePath = imagesResourcePath.getURI();
+      // When this application is executed with java -jar the URI is jar: URI ("jar:file:/"..".) 
+		  // URI.resolve and URI.relativize don't work on jar: URIs which are opaque and not hierarchical. 
+		  // imagePath.resolve(filename) won't work so I construct the URI by hand 
+		  imagePath = new URI(imagePath + filename);
+		  
+		  log.debug("Loading image from imagePath {}", imagePath);
+		  URL imageURL = imagePath.toURL();
+		  fileContent= StreamUtils.copyToByteArray(imageURL.openStream());
+		} catch (IOException | URISyntaxException e) {
+			log.error("Could not load image from {}", filename, e);
 		}
 
 		return fileContent;

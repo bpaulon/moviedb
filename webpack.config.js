@@ -1,15 +1,18 @@
 var path = require('path');
 
 module.exports = {
-    entry: './src/main/js/app.js',
+    entry: {
+    	app: './src/main/js/app.js',
+    	autosuggest: './src/main/js/AutoSuggest.jsx'
+    },
     devtool: 'sourcemaps',
     cache: true,
     debug: true,
     output: {
         path: __dirname,
-        filename: './src/main/resources/static/built/bundle.js'
+        //filename: './src/main/resources/static/built/[name].js'
         // In Eclipse remove main/js from sources so the app does not get redeployed and change filename to
-        // filename: './bin/static/built/bundle.js'
+        filename: './bin/static/built/[name].js'
     },
     module: {
         loaders: [
