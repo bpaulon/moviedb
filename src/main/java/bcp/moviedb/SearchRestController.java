@@ -1,5 +1,6 @@
 package bcp.moviedb;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.beans.factory.BeanFactory;
@@ -37,4 +38,13 @@ public class SearchRestController {
 		log.debug("result: {}", msi);
 		return msi;
 	}
+	
+	@GetMapping("searchDirector")
+  public List<String> searchDirector(@RequestParam(value = "name", required = true) String name) {
+
+    log.info("search by name {}", name);
+
+    return Arrays.asList("name1 <additional_info>", "name2 <additional_info>");
+    
+  }
 }

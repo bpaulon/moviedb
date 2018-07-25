@@ -4,97 +4,15 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import client from './client';
 
-const languages = [
-  {
-    name: 'C',
-    year: 1972
-  },
-  {
-    name: 'C#',
-    year: 2000
-  },
-  {
-    name: 'C++',
-    year: 1983
-  },
-  {
-    name: 'Clojure',
-    year: 2007
-  },
-  {
-    name: 'Elm',
-    year: 2012
-  },
-  {
-    name: 'Go',
-    year: 2009
-  },
-  {
-    name: 'Haskell',
-    year: 1990
-  },
-  {
-    name: 'Java',
-    year: 1995
-  },
-  {
-    name: 'Javascript',
-    year: 1995
-  },
-  {
-    name: 'Perl',
-    year: 1987
-  },
-  {
-    name: 'PHP',
-    year: 1995
-  },
-  {
-    name: 'Python',
-    year: 1991
-  },
-  {
-    name: 'Ruby',
-    year: 1995
-  },
-  {
-    name: 'Scala',
-    year: 2003
-  }
-];
 
-function getMatchingLanguages(value) {
-  const escapedValue = escapeRegexCharacters(value.trim());
-  
-  if (escapedValue === '') {
-    return [];
-  }
-  
-  const regex = new RegExp('^' + escapedValue, 'i');
-
-  return languages.filter(language => regex.test(language.name));
-}
-
-/* ----------- */
-/*    Utils    */
-/* ----------- */
-
-// https://developer.mozilla.org/en/docs/Web/JavaScript/Guide/Regular_Expressions#Using_Special_Characters
-function escapeRegexCharacters(str) {
-  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
-
-/* --------------- */
-/*    Component    */
-/* --------------- */
 
 function getSuggestionValue(suggestion) {
-  return suggestion.name;
+  return suggestion;
 }
 
 function renderSuggestion(suggestion) {
   return (
-    <span>{suggestion.name}</span>
+    <span>{suggestion}</span>
   );
 }
 
@@ -127,11 +45,19 @@ class App extends React.Component {
     
     // Fake request
     this.lastRequestId = setTimeout(() => {
-      this.setState({
-        isLoading: false,
-        suggestions: getMatchingLanguages(value)
-      });
-    }, 1000);
+      client({
+			method: 'GET', 
+			path: '/searchDirector?name=pa'
+		}).done(response => {
+			var resp = JSON.parse(response.entity);
+			this.setState({ 
+			    isLoading: false,
+				suggestions: resp 
+			});
+			
+			console.log("suggestions: " + this.state.suggestions);
+		});
+    }, 500);
   }
 
   onChange (event, { newValue }){
@@ -153,7 +79,7 @@ class App extends React.Component {
   render() {
     const { value, suggestions, isLoading } = this.state;
     const inputProps = {
-      placeholder: "Type 'c'",
+      placeholder: "Enter Director's name",
       value,
       onChange: this.onChange
     };
